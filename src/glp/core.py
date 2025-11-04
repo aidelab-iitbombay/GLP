@@ -22,7 +22,8 @@ import pulp
 # Enums
 # ----------------------
 class GoalSense(Enum):
-    """Indicates the sense/type of a goal.
+    """
+    Indicates the sense/type of a goal.
 
     ATTAIN: aim to attain (two-sided) the target — both under/over deviations tracked.
     MINIMIZE_UNDER: focus on minimizing underachievement (e.g., meet minimums).
@@ -47,7 +48,8 @@ class ConstraintSense(Enum):
 # ----------------------
 @dataclass
 class Goal:
-    """Representation of a soft goal (aspiration) in GLP.
+    """
+    Representation of a soft goal (aspiration) in GLP.
 
     Attributes:
         name: Unique identifier for the goal.
@@ -80,7 +82,8 @@ class Goal:
 
 @dataclass
 class Constraint:
-    """Representation of a hard constraint.
+    """
+    Representation of a hard constraint.
 
     Attributes:
         name: Unique identifier for the constraint.
@@ -117,10 +120,13 @@ def _sanitize_name(name: str) -> str:
 
 
 class GLPModel:
-    """Main container for GLP problems.
+    """
+    Main class to define and manage a Goal Programming model.
 
-    Wraps a pulp.LpProblem and provides helpers to register variables, hard constraints,
-    goals and automatically create deviation variables and linking constraints.
+    This class wraps around PuLP's `LpProblem` to:
+    - Add variables, goals, and constraints
+    - Handle deviation variables for each goal
+    - Prepare the structure for solving Goal Programming problems
 
     Example usage (conceptual):
         model = GLPModel("diet")
@@ -133,7 +139,8 @@ class GLPModel:
     """
 
     def __init__(self, name: str = "glp_problem", minimize: bool = True) -> None:
-        """Initialize the GLPModel.
+        """
+        Initialize a new GLPModel instance.
 
         Args:
             name: Problem name.
@@ -159,7 +166,8 @@ class GLPModel:
         up_bound: Optional[float] = None,
         cat: str = "Continuous",
     ) -> pulp.LpVariable:
-        """Create and register a pulp.LpVariable.
+        """
+        Create and register a pulp.LpVariable.
 
         Args:
             name: variable name (will be sanitized).
@@ -198,7 +206,8 @@ class GLPModel:
     # Constraint API
     # ----------------------
     def add_constraint(self, constraint: Constraint) -> None:
-        """Add a hard constraint to the internal PuLP problem.
+        """
+        Add a hard constraint to the internal PuLP problem.
 
         The constraint is converted to the appropriate PuLP relational operator.
 
@@ -233,7 +242,8 @@ class GLPModel:
     # Goal API
     # ----------------------
     def add_goal(self, goal: Goal) -> Tuple[pulp.LpVariable, pulp.LpVariable]:
-        """Register a Goal and create its deviation variables and linking constraint.
+        """
+        Register a Goal and create its deviation variables and linking constraint.
 
         Adds:
             - two nonnegative deviation variables: n_<goal>, p_<goal>
@@ -284,6 +294,136 @@ class GLPModel:
 
         # Return deviation variables for further usage (if caller wants to include them in objective)
         return (n_var, p_var)
+    
+    # NEW: Weighted Goal Programming Solver Implementation
+    
+    # def solve_weighted_goal_programming(self) -> Tuple[Dict[str, float], float]:
+    #     """
+    #     🆕 Solves a Weighted Goal Programming (WGP) model.
+    #     Objective:
+    #         Minimize Σ (w_i⁻ * n_i + w_i⁺ * p_i)
+    #     Returns:
+    #         Tuple[Dict[str, float], float]: (variable_values, objective_value)
+    #     """
+    #     # Build the weighted deviation-based objective
+    #     objective_terms = []
+    #     for goal_name, (goal, n_dev, p_dev) in self.goals.items():
+    #         # Each goal contributes weighted deviations
+    #         objective_terms.append(goal.weight * (n_dev + p_dev))
+
+    #     self.model += pulp.lpSum(objective_terms), "Weighted_Objective"
+
+    #     # Solve using PuLP's default solver
+    #     self.model.solve(pulp.PULP_CBC_CMD(msg=False))
+
+    #     # Collect results
+    #     variable_values = {v.name: v.varValue for v in self.model.variables()}
+    #     objective_value = pulp.value(self.model.objective)
+    #     return variable_values, objective_value
+
+    def solve_weighted(
+        self,
+        goal_weights: Optional[Dict[str, Tuple[float, float]]] = None,
+        cost_expr: Optional[pulp.LpAffineExpression] = None,
+        cost_weight: float = 0.0,
+        solver: Optional[pulp.PULP_CBC_CMD] = None,
+        keep_existing_objective: bool = False,
+    ) -> Dict[str, Any]:
+        """Build and solve a Weighted Goal Programming (WGP) objective.
+
+        Objective (general form):
+            Minimize  cost_weight * cost_expr
+                    + Σ_goals (w_minus[g] * n_g + w_plus[g] * p_g)
+
+        Args:
+            goal_weights: mapping goal_name -> (w_minus, w_plus).
+                          If None, uses goal.weight for both sides.
+            cost_expr: optional PuLP linear expression for cost term (e.g., Σ c_i x_i)
+            cost_weight: multiplier for the cost term (default 0.0)
+            solver: optional PuLP solver object; if None, uses default CBC solver.
+            keep_existing_objective: if True, do not overwrite any objective already set.
+
+        Returns:
+            dict with keys:
+                - "status": pulp.LpStatus[problem.status]
+                - "objective": numeric objective value (or None if infeasible)
+                - "variables": mapping variable_name -> value
+                - "deviations": mapping goal_name -> (n_value, p_value)
+        """
+        # Build objective
+        if not keep_existing_objective:
+            # Remove existing objective by resetting problem.objective (PuLP quirk)
+            # PuLP doesn't provide a direct reset; we add a new objective assignment below.
+            pass
+
+        # Use provided solver or default
+        if solver is None:
+            solver = pulp.PULP_CBC_CMD(msg=False)
+
+        # Assemble weighted deviation sum
+        weighted_devs = []
+        for gname, goal in self.goals.items():
+            if gname not in self.dev_vars:
+                raise RuntimeError(f"Goal '{gname}' has no registered deviation variables.")
+            n_var, p_var = self.dev_vars[gname]
+            if goal_weights and gname in goal_weights:
+                w_minus, w_plus = goal_weights[gname]
+            else:
+                # default: use goal.weight for both sides
+                w_minus = float(goal.weight)
+                w_plus = float(goal.weight)
+            weighted_devs.append(w_minus * n_var)
+            weighted_devs.append(w_plus * p_var)
+
+        # cost term
+        obj_terms = []
+        if cost_expr is not None and cost_weight != 0.0:
+            obj_terms.append(cost_weight * cost_expr)
+
+        if weighted_devs:
+            obj_terms.append(pulp.lpSum(weighted_devs))
+
+        if not obj_terms:
+            raise RuntimeError("No objective terms defined for WGP. Provide goals or cost term.")
+
+        objective = pulp.lpSum(obj_terms)
+
+        # set objective
+        self.problem += objective
+
+        # Solve
+        result = self.problem.solve(solver)
+
+        status = pulp.LpStatus[self.problem.status]
+        obj_value = None
+        if status == "Optimal" or status == "Optimal Solution Found":
+            try:
+                obj_value = pulp.value(self.problem.objective)
+            except Exception:
+                obj_value = None
+
+        # Collect variable values
+        var_values: Dict[str, float] = {}
+        for name, var in self.variables.items():
+            try:
+                var_values[name] = float(var.value())
+            except Exception:
+                var_values[name] = None
+
+        # Collect deviations
+        dev_values: Dict[str, Tuple[Optional[float], Optional[float]]] = {}
+        for gname in self.goals.keys():
+            n_var, p_var = self.dev_vars[gname]
+            n_val = float(n_var.value()) if n_var.value() is not None else None
+            p_val = float(p_var.value()) if p_var.value() is not None else None
+            dev_values[gname] = (n_val, p_val)
+
+        return {
+            "status": status,
+            "objective": obj_value,
+            "variables": var_values,
+            "deviations": dev_values,
+        }
 
     # ----------------------
     # Utility / Introspection
