@@ -17,6 +17,15 @@ src/glp/core.py
 
 ---
 
+## A simple demo of how to use this package is shown in the file:
+
+
+```
+simple_demo.py
+```
+
+---
+
 ## 🧠 What is Goal Programming?
 
 Traditional optimization maximizes or minimizes one objective.
