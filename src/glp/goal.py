@@ -1,18 +1,22 @@
 from dataclasses import dataclass
 from typing import Any
 
-from .enums import GoalSense
+from glp.enums import GoalSense
 
 
-@dataclass(frozen=True)
+@dataclass
 class Goal:
-    """
-    Class to define a single goal
-    """
-
     name: str
     expression: Any
     target: float
-    sense: GoalSense
+    sense: GoalSense = GoalSense.ATTAIN
     weight: float = 1.0
     priority: int = 1
+
+    def __post_init__(self) -> None:
+        if self.weight < 0:
+            raise ValueError("Goal.weight cannot be negative.")
+        if not isinstance(self.priority, int) or self.priority < 1:
+            raise ValueError("priority must be integer >= 1")
+        if not isinstance(self.sense, GoalSense):
+            raise ValueError("sense must be GoalSense enum")

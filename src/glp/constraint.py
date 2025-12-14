@@ -1,16 +1,18 @@
 from dataclasses import dataclass
 from typing import Any
 
-from .enums import ConstraintSense
+from glp.enums import ConstraintSense
 
 
-@dataclass(frozen=True)
+@dataclass
 class Constraint:
-    """
-    A data class to define a hard constraint
-    """
-
     name: str
     expression: Any
     sense: ConstraintSense
     rhs: float
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.sense, ConstraintSense):
+            raise ValueError("sense must be ConstraintSense")
+        if not isinstance(self.rhs, (int, float)):
+            raise ValueError("rhs must be numeric")

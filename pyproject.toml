@@ -53,3 +53,6 @@ testpaths = ["tests"]
 [tool.mypy]
 packages = ["glp"]
 strict = true
+
+[tool.setuptools.packages.find]
+where = ["src"]

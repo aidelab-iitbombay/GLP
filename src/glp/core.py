@@ -9,70 +9,21 @@ Contains:
 """
 
 from __future__ import annotations
-from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Dict, Optional, Tuple
+
 import re
+from typing import Any, Dict, Optional, Tuple
+
 import pulp
+from pulp import LpVariable
 
-
-# ============================================================================
-# ENUMS
-# ============================================================================
-
-class GoalSense(Enum):
-    ATTAIN = "ATTAIN"
-    MINIMIZE_UNDER = "MINIMIZE_UNDER"
-    MINIMIZE_OVER = "MINIMIZE_OVER"
-
-
-class ConstraintSense(Enum):
-    LE = "<="
-    GE = ">="
-    EQ = "=="
-    LT = "<"
-    GT = ">"
-
-
-# ============================================================================
-# DATACLASSES
-# ============================================================================
-
-@dataclass
-class Goal:
-    name: str
-    expression: Any
-    target: float
-    sense: GoalSense = GoalSense.ATTAIN
-    weight: float = 1.0
-    priority: int = 1
-
-    def __post_init__(self):
-        if self.weight < 0:
-            raise ValueError("Goal.weight cannot be negative.")
-        if not isinstance(self.priority, int) or self.priority < 1:
-            raise ValueError("priority must be integer >= 1")
-        if not isinstance(self.sense, GoalSense):
-            raise ValueError("sense must be GoalSense enum")
-
-
-@dataclass
-class Constraint:
-    name: str
-    expression: Any
-    sense: ConstraintSense
-    rhs: float
-
-    def __post_init__(self):
-        if not isinstance(self.sense, ConstraintSense):
-            raise ValueError("sense must be ConstraintSense")
-        if not isinstance(self.rhs, (int, float)):
-            raise ValueError("rhs must be numeric")
-
+from glp.constraint import Constraint
+from glp.enums import ConstraintSense
+from glp.goal import Goal
 
 # ============================================================================
 # UTILS
 # ============================================================================
+
 
 def _sanitize_name(name: str) -> str:
     s = re.sub(r"\W+", "_", name.strip())
@@ -85,6 +36,7 @@ def _sanitize_name(name: str) -> str:
 # ============================================================================
 # GLP MODEL
 # ============================================================================
+
 
 class GLPModel:
     """
@@ -99,7 +51,9 @@ class GLPModel:
 
     def __init__(self, name: str = "glp", minimize: bool = True):
         self.name = name
-        self.problem = pulp.LpProblem(name, pulp.LpMinimize if minimize else pulp.LpMaximize)
+        self.problem = pulp.LpProblem(
+            name, pulp.LpMinimize if minimize else pulp.LpMaximize
+        )
 
         self.variables: Dict[str, pulp.LpVariable] = {}
         self.goals: Dict[str, Goal] = {}
@@ -110,8 +64,11 @@ class GLPModel:
     # VARIABLE API
     # ----------------------------------------------------------------------
     def add_variable(
-        self, name: str, low_bound: Optional[float] = 0, up_bound: Optional[float] = None,
-        cat: str = "Continuous"
+        self,
+        name: str,
+        low_bound: Optional[float] = 0,
+        up_bound: Optional[float] = None,
+        cat: str = "Continuous",
     ) -> pulp.LpVariable:
 
         if name in self.variables:
@@ -132,7 +89,7 @@ class GLPModel:
     # ----------------------------------------------------------------------
     # CONSTRAINT API
     # ----------------------------------------------------------------------
-    def add_constraint(self, c: Constraint):
+    def add_constraint(self, c: Constraint) -> None:
         if c.name in self.constraints:
             raise ValueError(f"constraint '{c.name}' exists")
 
@@ -153,7 +110,7 @@ class GLPModel:
     # ----------------------------------------------------------------------
     # GOAL API (creates deviation vars)
     # ----------------------------------------------------------------------
-    def add_goal(self, g: Goal):
+    def add_goal(self, g: Goal) -> Tuple[LpVariable, LpVariable]:
         if g.name in self.goals:
             raise ValueError(f"goal '{g.name}' exists")
 
@@ -239,5 +196,5 @@ class GLPModel:
         }
 
     # ----------------------------------------------------------------------
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"GLPModel(vars={len(self.variables)}, goals={len(self.goals)})"
