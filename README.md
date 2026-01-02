@@ -8,53 +8,6 @@ The package is designed for researchers and practitioners who need to solve **mu
 # What is Goal Linear Programming
 
 **GLP** is a variant of Linear Programming which retains the linear structure of LP but allows conflicting constraints to be managed by introducing "deviational variables" and priority weights. Priority weights are values assigned to different goals of a GLP problem, where a higher weight implies that the model must prioritize that goal more by bringing its final value closest to the assigned goal.
-
-## Version **0.0.1** implements:
-
-- **Weighted Goal Programming (WGP)**
-- Automatic creation of **under- and over-deviation variables**
-- Support for goal types:
-  - equality / attainment to a value (target)
-  - achieving lower than a value
-  - achieving higher than a value
-  - achieving percent of a value
-Goals can be considered soft targets which can be under or over achieved based on certain weights assigned
-
-##
-   
-- Explicit separation of:
-  - **hard constraints** (must be satisfied)
-  - **soft goals** (targets that may be violated with penalty)
-- Linear programming backend via **PuLP**
-- Default open-source solver: **CBC**
-- Structured solution output:
-  - decision variable values
-  - per-goal deviations
-  - objective value and solver status
-
-The implementation is intentionally minimal, transparent, and fully linear.
-
----
-
-## Installation
-
-```bash
-pip install glp
-```
-
----
-
-## Dependencies
-
-- **pulp** (required)
-
-Optional (for examples and analysis):
-
-- **pandas**
-- **matplotlib**
-
----
-
 ## Conceptual overview
 
 Traditional linear optimization optimizes a **single objective**.  
@@ -87,6 +40,43 @@ where weights reflect the relative importance of meeting each goal.
 
 ---
 
+## Version **0.0.1** implements:
+
+- **Weighted Goal Programming (WGP)**
+- Automatic creation of **under- and over-deviation variables**
+- Support for goal types:
+  - equality / attainment to a value (target)
+  - achieving lower than a value
+  - achieving higher than a value
+  - achieving percent of a value
+Goals can be considered soft targets which can be under or over achieved based on certain weights assigned
+
+## Constraints:
+
+- The package builds constraints using the class
+- Constraints can also be expreseed in terms of less than more than equal to
+- A point explaining how are they different from goals
+
+## Solver
+- Linear programming backend via **PuLP**
+- Default open-source solver: **CBC** (Can we change default solver, if so which are supported? )
+
+## Output
+- Structured solution output:
+  - decision variable values
+  - per-goal deviations
+  - objective value and solver status
+ 
+---
+## Dependencies
+
+- **pulp** (required)
+
+Optional (for examples and analysis):
+
+- **pandas**
+- **matplotlib**
+
 ## Project structure
 
 ```
@@ -97,7 +87,13 @@ src/glp/
 ├── enums.py       # GoalSense and ConstraintSense enums
 └── __init__.py
 ```
+## Quick Start Guide
+---
+## Installation
 
+```bash
+pip install glp
+```
 ---
 
 ## Core API
