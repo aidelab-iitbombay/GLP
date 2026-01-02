@@ -79,5 +79,3 @@ The authors acknowledge support from TGI for providing data that enabled us to f
 
 # References
 
-
-# References
