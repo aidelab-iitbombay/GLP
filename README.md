@@ -14,10 +14,13 @@ The package is designed for researchers and practitioners who need to solve **mu
 - **Weighted Goal Programming (WGP)**
 - Automatic creation of **under- and over-deviation variables**
 - Support for goal types:
-  - equality / attainment
-  - achieving lower than
-  - achieving higher than
-  - achieving percent of
+  - equality / attainment to a value (target)
+  - achieving lower than a value
+  - achieving higher than a value
+  - achieving percent of a value
+Goals can be considered soft targets which can be under or over achieved based on certain weights assigned
+
+##
    
 - Explicit separation of:
   - **hard constraints** (must be satisfied)
