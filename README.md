@@ -5,17 +5,20 @@
 The package is designed for researchers and practitioners who need to solve **multi-objective linear optimization problems** where several targets must be balanced simultaneously under hard constraints—common in health, public health, nutrition, and resource allocation problems.
 
 ---
+# What is Goal Linear Programming
 
-## What this package provides
+**GLP** is a variant of Linear Programming which retains the linear structure of LP but allows conflicting constraints to be managed by introducing "deviational variables" and priority weights. Priority weights are values assigned to different goals of a GLP problem, where a higher weight implies that the model must prioritize that goal more by bringing its final value closest to the assigned goal.
 
-Version **0.0.1** implements:
+## Version **0.0.1** implements:
 
 - **Weighted Goal Programming (WGP)**
 - Automatic creation of **under- and over-deviation variables**
 - Support for goal types:
   - equality / attainment
-  - minimizing under-achievement
-  - minimizing over-achievement
+  - achieving lower than
+  - achieving higher than
+  - achieving percent of
+   
 - Explicit separation of:
   - **hard constraints** (must be satisfied)
   - **soft goals** (targets that may be violated with penalty)
