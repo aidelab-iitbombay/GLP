@@ -62,6 +62,5 @@ PyGuLP supports reproducibility and alignment with best practices in optimizatio
 While the current package is intended for programmatic use by researchers, its formulation is designed to support future extensions, including higher-level interfaces aimed at enabling domain experts without programming backgrounds to formulate and explore goal-based optimization models.
 
 
-
 # References
 
