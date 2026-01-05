@@ -165,24 +165,6 @@ class GLPModel:
             self.problem += total <= upper, f"{group}_UL"
 
     # ----------------------------------------------------------------------
-    # 🆕 BIG-M LINKING HELPER
-    # ----------------------------------------------------------------------
-    def add_big_m_link(
-        self,
-        x: pulp.LpVariable,
-        y: pulp.LpVariable,
-        M: float,
-        name: Optional[str] = None,
-    ) -> None:
-        """
-        Add Big-M constraint: x <= M * y
-        Typically used for linking continuous x to binary y.
-        """
-
-        cname = _sanitize_name(name or f"bigM_{x.name}_{y.name}")
-        self.problem += x <= M * y, cname
-
-    # ----------------------------------------------------------------------
     # CONSTRAINT API
     # ----------------------------------------------------------------------
     def add_constraint(self, c: Constraint) -> None:
