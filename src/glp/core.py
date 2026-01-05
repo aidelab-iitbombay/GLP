@@ -11,7 +11,7 @@ Contains:
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Iterable, List
 
 import pulp
 from pulp import LpVariable
@@ -20,10 +20,10 @@ from glp.constraint import Constraint
 from glp.enums import ConstraintSense
 from glp.goal import Goal
 
+
 # ============================================================================
 # UTILS
 # ============================================================================
-
 
 def _sanitize_name(name: str) -> str:
     s = re.sub(r"\W+", "_", name.strip())
@@ -37,14 +37,15 @@ def _sanitize_name(name: str) -> str:
 # GLP MODEL
 # ============================================================================
 
-
 class GLPModel:
     """
     Central GLP model wrapper around PuLP.
+
     Handles:
     - variable registry
+    - variable groups
     - goal registry
-    - dev vars
+    - deviation variables
     - constraint registry
     - weighted goal programming solve
     """
@@ -59,6 +60,7 @@ class GLPModel:
         self.goals: Dict[str, Goal] = {}
         self.constraints: Dict[str, Constraint] = {}
         self.dev_vars: Dict[str, Tuple[pulp.LpVariable, pulp.LpVariable]] = {}
+        self.variable_groups: Dict[str, List[str]] = {}
 
     # ----------------------------------------------------------------------
     # VARIABLE API
@@ -70,11 +72,15 @@ class GLPModel:
         up_bound: Optional[float] = None,
         cat: str = "Continuous",
     ) -> pulp.LpVariable:
+        """
+        Add a single decision variable.
+        """
 
         if name in self.variables:
             return self.variables[name]
 
         safe = _sanitize_name(name)
+
         cat_map = {
             "CONTINUOUS": pulp.LpContinuous,
             "INTEGER": pulp.LpInteger,
@@ -85,6 +91,96 @@ class GLPModel:
         var = pulp.LpVariable(safe, lowBound=low_bound, upBound=up_bound, cat=pulp_cat)
         self.variables[name] = var
         return var
+
+    # ----------------------------------------------------------------------
+    # 🆕 MULTI-VARIABLE API
+    # ----------------------------------------------------------------------
+    def add_variables(
+        self,
+        names: Iterable[str],
+        low_bound: Optional[float] = 0,
+        up_bound: Optional[float] = None,
+        cat: str = "Continuous",
+        group: Optional[str] = None,
+    ) -> Dict[str, pulp.LpVariable]:
+        """
+        Add multiple variables at once.
+        Optionally assign them to a group.
+        """
+
+        created = {}
+        for name in names:
+            created[name] = self.add_variable(
+                name,
+                low_bound=low_bound,
+                up_bound=up_bound,
+                cat=cat,
+            )
+
+        if group is not None:
+            self.add_to_group(group, names)
+
+        return created
+
+    # ----------------------------------------------------------------------
+    # 🆕 GROUP MANAGEMENT
+    # ----------------------------------------------------------------------
+    def add_to_group(self, group: str, variables: Iterable[str]) -> None:
+        """
+        Add existing variables to a named group.
+        """
+
+        if group not in self.variable_groups:
+            self.variable_groups[group] = []
+
+        for var in variables:
+            if var not in self.variables:
+                raise KeyError(f"Variable '{var}' not found in model")
+            if var not in self.variable_groups[group]:
+                self.variable_groups[group].append(var)
+
+    # ----------------------------------------------------------------------
+    # 🆕 GROUP BOUNDING (LL / UL)
+    # ----------------------------------------------------------------------
+    def add_group_bounds(
+        self,
+        group: str,
+        lower: Optional[float] = None,
+        upper: Optional[float] = None,
+    ) -> None:
+        """
+        Add collective lower/upper bounds for a group of variables.
+        """
+
+        if group not in self.variable_groups:
+            raise KeyError(f"Group '{group}' not defined")
+
+        vars_in_group = [self.variables[v] for v in self.variable_groups[group]]
+        total = pulp.lpSum(vars_in_group)
+
+        if lower is not None:
+            self.problem += total >= lower, f"{group}_LL"
+
+        if upper is not None:
+            self.problem += total <= upper, f"{group}_UL"
+
+    # ----------------------------------------------------------------------
+    # 🆕 BIG-M LINKING HELPER
+    # ----------------------------------------------------------------------
+    def add_big_m_link(
+        self,
+        x: pulp.LpVariable,
+        y: pulp.LpVariable,
+        M: float,
+        name: Optional[str] = None,
+    ) -> None:
+        """
+        Add Big-M constraint: x <= M * y
+        Typically used for linking continuous x to binary y.
+        """
+
+        cname = _sanitize_name(name or f"bigM_{x.name}_{y.name}")
+        self.problem += x <= M * y, cname
 
     # ----------------------------------------------------------------------
     # CONSTRAINT API
@@ -197,4 +293,8 @@ class GLPModel:
 
     # ----------------------------------------------------------------------
     def __repr__(self) -> str:
-        return f"GLPModel(vars={len(self.variables)}, goals={len(self.goals)})"
+        return (
+            f"GLPModel(vars={len(self.variables)}, "
+            f"goals={len(self.goals)}, "
+            f"groups={len(self.variable_groups)})"
+        )
