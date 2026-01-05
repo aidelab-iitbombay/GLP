@@ -9,18 +9,19 @@ tags:
   - health
   - public health
 authors:
-  - name: Author One
+  - name: Kshitij Vaidya
     orcid: 0000-0000-0000-0000
+    equal-contrib: true
+    affiliation: 1
+  - name: Roomani Srivastava
+    orcid: 0000-0001-8183-109X
+    affiliation: 1
+  - name: Ishan Pandit
+    orcid: 0000-0000-0000-0000
+    affiliation: 1
+  - name: Kshitij Jadhav
     corresponding: true
-    affiliation: 1
-  - name: Author Two
-    orcid: 0000-0000-0000-0000
-    affiliation: 1
-  - name: Author Three
-    orcid: 0000-0000-0000-0000
-    affiliation: 1
-  - name: Author Four
-    orcid: 0000-0000-0000-0000
+    orcid: 0000-0001-9795-8335
     affiliation: 1
 affiliations:
   - name: AIDE Lab, Koita Centre for Digital Health, Indian Institute of Technology Bombay, India
