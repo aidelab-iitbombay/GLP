@@ -15,6 +15,7 @@ authors:
     affiliation: 1
   - name: Roomani Srivastava
     orcid: 0000-0001-8183-109X
+    equal-contrib: true
     affiliation: 1
   - name: Ishan Pandit
     orcid: 0000-0000-0000-0000
