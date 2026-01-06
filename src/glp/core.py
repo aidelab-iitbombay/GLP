@@ -1,4 +1,3 @@
-# src/glp/core.py
 """
 Core structures for Goal Linear Programming (GLP).
 
@@ -18,7 +17,7 @@ for higher-level problem-specific models (e.g., diet optimization).
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Optional, Tuple, Iterable, List
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import pulp
 from pulp import LpVariable
@@ -27,10 +26,10 @@ from glp.constraint import Constraint
 from glp.enums import ConstraintSense
 from glp.goal import Goal
 
-
 # ============================================================================
 # UTILS
 # ============================================================================
+
 
 def _sanitize_name(name: str) -> str:
     """
@@ -64,6 +63,7 @@ def _sanitize_name(name: str) -> str:
 # ============================================================================
 # GLP MODEL
 # ============================================================================
+
 
 class GLPModel:
     """
