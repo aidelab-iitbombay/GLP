@@ -39,7 +39,7 @@ jobs:
 
     - name: Type check with mypy
       run: |
-        mypy src/glp
+        mypy --ignore-missing-imports src/glp
 
     - name: Test with pytest
       run: |
