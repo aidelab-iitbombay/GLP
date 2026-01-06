@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=64.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "glp"
-version = "0.1.0"
+name = "glp-python"
+version = "0.0.1"
 authors = [
     { name = "Kshitij Vaidya", email = "22b1829@iitb.ac.in" }
 ]
