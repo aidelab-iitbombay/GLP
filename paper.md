@@ -55,8 +55,11 @@ Let
 Each goal `k = 1, ..., K` is defined by a linear expression `Z_k(x)` and a target value `T_k`. To measure deviations from the target, PyGuLP introduces under and over deviation variables `d-_k` and `d+_k` and constructs the goal-linking equation:
 
 Z_k(x) + d-_k - d+_k = T_k
+
 The weighted goal programming objective minimizes the total deviation across all goals:
+
 minimize sum_k w_k * (d-_k + d+_k)
+
 where `w_k >= 0` is the weight assigned to goal `k`. Larger weights enforce closer adherence to the corresponding target. This formulation preserves linearity and allows trade-offs between competing targets to be expressed transparently.
 
 
