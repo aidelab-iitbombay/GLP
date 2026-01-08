@@ -3,10 +3,13 @@ requires = ["setuptools>=64.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "glp-python"
+name = "pygulp"
 version = "0.0.1"
 authors = [
-    { name = "Kshitij Vaidya", email = "22b1829@iitb.ac.in" }
+    { name = "AIDE Lab", email = "info.aidelab@gmail.com" },
+    { name = "Kshitij Vaidya", email = "22b1829@iitb.ac.in" },
+    { name = "Ishan Pandit" },
+    { name = "Roomani Srivastava", email = "roomani@iitb.ac.in" }
 ]
 description = "Python Package for Goal Linear Programming"
 readme = "README.md"

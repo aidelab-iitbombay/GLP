@@ -11,9 +11,14 @@ import sys
 # Point to the 'src' directory relative to this conf.py file
 sys.path.insert(0, os.path.abspath("../../src"))
 
-project = "GLP Python"
-copyright = "2026, Kshitij Vaidya, Ishan Pandit, Dr. Roomani Srivastava"
-author = "Kshitij Vaidya, Ishan Pandit, Dr. Roomani Srivastava"
+project = "PyGuLP"
+copyright = (
+    "2026, Kshitij Vaidya, Ishan Pandit, Roomani Srivastava, "
+    "AIDE Lab - Prof. Kshitij Jadhav"
+)
+author = (
+    "Kshitij Vaidya, Ishan Pandit, Roomani Srivastava, AIDE Lab - Prof. Kshitij Jadhav"
+)
 release = "0.0.1"
 
 # -- General configuration ---------------------------------------------------

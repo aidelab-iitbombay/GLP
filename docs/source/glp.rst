@@ -1,4 +1,4 @@
-glp package
+PyGuLP Package
 ===========
 
 Submodules
