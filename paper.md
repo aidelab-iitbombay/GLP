@@ -48,7 +48,7 @@ However, unlike linear programming there is no open-source tool that can impleme
 ## Design Philosophy and Architecture
 PyGuLP is designed to formalize and standardize how weighted goal programming models are constructed and solved in applied research. The package provides a consistent structure for separating feasibility constraints from aspirational goals or targets, reflecting the distinction emphasized in the goal programming literature but often implemented manually in practice. For each goal, PyGuLP systematically introduces deviation variables and constructs the corresponding goal-linking constraint, ensuring that under- and over-achievement are represented explicitly. The resulting optimization problem remains a linear program and is solved using established solvers through the PuLP ecosystem. By returning achieved values and deviations in a structured form, PyGuLP supports interpretation, comparison across scenarios, and reuse across problem settings. 
 
-# Mathematical formulation
+## Mathematical formulation
 PyGuLP implements Weighted Goal Linear Programming using a standard linear formulation.
 Let  
 `x` denote a vector of decision variables subject to a set of linear feasibility constraints.
