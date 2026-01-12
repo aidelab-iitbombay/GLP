@@ -27,7 +27,7 @@ authors:
 affiliations:
   - name: AIDE Lab, Koita Centre for Digital Health, Indian Institute of Technology Bombay, India
     index: 1
-date: 2 January 2026
+date: 12 January 2026
 bibliography: paper.bib
 ---
 
