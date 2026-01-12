@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygulp"
-version = "0.0.1"
+version = "0.1.2"
 authors = [
     { name = "AIDE Lab", email = "info.aidelab@gmail.com" },
     { name = "Kshitij Vaidya", email = "22b1829@iitb.ac.in" },
-    { name = "Ishan Pandit" },
+    { name = "Ishan Pandit", email = "22b2141@iitb.ac.in" },
     { name = "Roomani Srivastava", email = "roomani@iitb.ac.in" }
 ]
 description = "Python Package for Goal Linear Programming"
@@ -57,6 +57,9 @@ testpaths = ["tests"]
 packages = ["glp"]
 strict = true
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["glp", "glp.*"]
