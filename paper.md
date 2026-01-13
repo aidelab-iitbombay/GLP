@@ -10,7 +10,7 @@ tags:
   - public health
 authors:
   - name: Kshitij Vaidya
-    orcid: 0000-0000-0000-0000
+    orcid: 0009-0004-4102-2094
     equal-contrib: true
     affiliation: 1
   - name: Roomani Srivastava
