@@ -18,7 +18,7 @@ authors:
     equal-contrib: true
     affiliation: 1
   - name: Ishan Pandit
-    orcid: 0000-0000-0000-0000
+    orcid: 0009-0003-4558-0790
     affiliation: 1
   - name: Kshitij Jadhav
     corresponding: true
