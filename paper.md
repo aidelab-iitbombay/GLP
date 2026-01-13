@@ -2,7 +2,7 @@
 title: 'PyGuLP: A Python package for Weighted Goal Linear Programming'
 tags:
   - Python
-  - optimization
+  - Optimization
   - linear programming
   - goal programming
   - decision support
