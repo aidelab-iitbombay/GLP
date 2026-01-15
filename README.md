@@ -6,6 +6,33 @@ The package is intended for **multi-target linear optimization problems**, where
 
 ---
 
+## Installation
+
+```bash
+pip install glp
+```
+
+### Dependencies
+
+Required:
+- pulp
+
+Optional:
+- pandas
+- matplotlib
+
+---
+
+## Project structure
+
+    src/glp/
+    ├── core.py        # GLPModel and solver logic
+    ├── goal.py        # Goal dataclass
+    ├── constraint.py  # Constraint dataclass
+    ├── enums.py       # GoalSense and ConstraintSense enums
+    └── __init__.py
+
+---
 ## What is Goal Linear Programming?
 
 Goal Linear Programming (GLP) is an extension of classical Linear Programming (LP) that allows multiple, potentially conflicting targets to be handled within a single linear optimization model.
@@ -183,36 +210,6 @@ The solver returns a structured result containing:
 - final objective value  
 
 This structure supports diagnostics, scenario comparison, and sensitivity analysis.
-
----
-
-## Installation
-
-```bash
-pip install glp
-```
-
-### Dependencies
-
-Required:
-- pulp
-
-Optional:
-- pandas
-- matplotlib
-
----
-
-## Project structure
-
-    src/glp/
-    ├── core.py        # GLPModel and solver logic
-    ├── goal.py        # Goal dataclass
-    ├── constraint.py  # Constraint dataclass
-    ├── enums.py       # GoalSense and ConstraintSense enums
-    └── __init__.py
-
----
 
 ## Essential classes
 
