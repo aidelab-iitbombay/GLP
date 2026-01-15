@@ -9,7 +9,7 @@ The package is intended for **multi-target linear optimization problems**, where
 ## Installation
 
 ```bash
-pip install glp
+pip install pygulp
 ```
 
 ### Dependencies
