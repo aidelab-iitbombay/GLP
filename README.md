@@ -4,6 +4,7 @@
 
 The package is intended for **multi-target linear optimization problems**, where several desired outcomes must be balanced simultaneously under linear constraints. Such problems commonly arise in health and public health planning, environmental management, resource allocation, and policy analysis. The package itself is **domain-agnostic** and can be applied wherever linear models with multiple targets are appropriate.
 
+The documentation of PyGuLP can be accessed from the [AIDE Lab website](https://www.kcdh.iitb.ac.in/~kshitij/browser/assets/glp-docs/index.html).
 ---
 
 ## Installation
