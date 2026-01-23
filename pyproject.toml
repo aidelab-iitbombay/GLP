@@ -23,7 +23,8 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/aidelab-iitbombay/GLP"
+Homepage = "https://github.com/aidelab-iitbombay/GLP"
+Documentation = "https://www.kcdh.iitb.ac.in/~kshitij/browser/assets/glp-docs/index.html"
 
 [project.optional-dependencies]
 # For visualisation and data handling
