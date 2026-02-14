@@ -223,9 +223,7 @@ from glp.core import GLPModel
 from glp.enums import ConstraintSense
 from glp.goal import Goal
 
-# ---------------------------------------------
-# 1. Data (mirrors your notebook content)
-# ---------------------------------------------
+# 1. Data 
 units = pd.DataFrame(
     {
         "Unit": ["Triage", "Consultation", "Infusion"],
@@ -309,9 +307,8 @@ global_params = {
     },
 }
 
-# ---------------------------------------------
 # 2. Helpers
-# ---------------------------------------------
+
 U = units["Unit"].tolist()
 C = patient_classes["Class"].tolist()
 K = config_options["Option_ID"].tolist()
@@ -343,9 +340,9 @@ templates = [k for k in K if opt_type[k] == "Infusion_Template"]
 # Capacity assumption (patients per infusion nurse-hour)
 patients_per_nurse_hour = 2.0
 
-# ---------------------------------------------
+
 # 3. Model (using glp)
-# ---------------------------------------------
+
 m = GLPModel(name="Outpatient_GLPP", minimize=True)
 
 # Staff variables (integer counts per unit)
@@ -435,9 +432,9 @@ m.add_constraint(
     )
 )
 
-# ---------------------------------------------
-# 5. Goals (weighted)
-# ---------------------------------------------
+
+# 5. Goals 
+
 # TAT goals: penalize only positive deviation above target (p-var)
 goal_weights = {}
 for c in C:
@@ -464,17 +461,17 @@ for c in C:
     )
     goal_weights[f"Access_{c}"] = (lambda_access * priority[c], 0.0)
 
-# ---------------------------------------------
-# 6. Solve (weighted goal programming)
-# ---------------------------------------------
+
+# 6. Solve 
+
 lambda_cost = 1e-3
 result = m.solve_weighted(
     goal_weights=goal_weights, cost_expr=total_cost_expr, cost_weight=lambda_cost
 )
 
-# ---------------------------------------------
+
 # 7. Report
-# ---------------------------------------------
+
 print(f"Status: {result['status']}")
 print(f"Objective value: {result['objective']:.2f}")
 
