@@ -1,7 +1,7 @@
 # import pandas as pd
 # import pulp
 
-# # --- 1. Data Setup (from your notebook) ---
+# # --- 1. Data Setup
 # groups = pd.DataFrame({
 #     "Group": ["Punctual", "Late"],
 #     "Patients": [120, 60],
@@ -61,9 +61,9 @@
 #     min_count = group_stats[group]['Patients'] * group_stats[group]['Min_Service_Prop']
 #     prob += decision_vars[(group, 45)] >= min_count, f"Min_Service_Req_{group}"
 
-# # --- 5. Goal Programming (Soft Constraints) ---
+# # --- 5. Goal Programming ---
 
-# # We need a list to store the penalty terms for the objective function
+# # List to store the penalty terms for the objective function
 # objective_terms = []
 
 # for i, row in waiting_goals.iterrows():
@@ -214,7 +214,7 @@ for group in groups["Group"]:
         )
     )
 
-# --- 5. Goals (Soft Constraints) ---
+# --- 5. Goals ---
 # For each waiting goal: scheduled(group,time) + n - p = target_val
 # Penalize only underachievement via goal_weights[gname] = (weight, 0.0)
 goal_weights = {}
