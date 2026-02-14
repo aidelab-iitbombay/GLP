@@ -1,11 +1,11 @@
-# # GLP model for outpatient resource allocation with TAT goals using PuLP
+# # GLP model for outpatient resource allocation with TAT goals
 
 # import pulp as pl
 # import pandas as pd
 
-# # ---------------------------------------------
-# # 1. Data (mirrors your notebook content)
-# # ---------------------------------------------
+
+# # 1. Data 
+
 # units = pd.DataFrame({
 #     "Unit": ["Triage", "Consultation", "Infusion"],
 #     "Staff_Type": ["Nurse", "Doctor", "Nurse"],
@@ -75,9 +75,8 @@
 #     },
 # }
 
-# # ---------------------------------------------
 # # 2. Helpers
-# # ---------------------------------------------
+
 # U = units["Unit"].tolist()
 # C = patient_classes["Class"].tolist()
 # K = config_options["Option_ID"].tolist()
@@ -112,9 +111,9 @@
 # # Patients per infusion nurse-hour. Adjust if you have measured rates.
 # patients_per_nurse_hour = 2.0
 
-# # ---------------------------------------------
+
 # # 3. Model
-# # ---------------------------------------------
+
 # m = pl.LpProblem("Outpatient_GLPP", pl.LpMinimize)
 
 # # Staff variables (integer counts per unit)
@@ -137,9 +136,8 @@
 # # Total cost variable
 # TotalCost = pl.LpVariable("TotalCost", lowBound=0, cat=pl.LpContinuous)
 
-# # ---------------------------------------------
+
 # # 4. Constraints
-# # ---------------------------------------------
 
 # # TAT linkage: TAT_c = Base_TAT_c - sum_u Gamma[c,u]*(x_u - MinStaff_u)
 # for c in C:
@@ -167,9 +165,9 @@
 
 # m += served_patients <= patients_per_nurse_hour * base_hours * effective_infusion_staff, "infusion_capacity"
 
-# # ---------------------------------------------
+
 # # 5. Objective (weighted goal programming)
-# # ---------------------------------------------
+
 # # Minimize weighted TAT positive deviations and access shortfall; include small cost penalty
 # lambda_access = 1.0
 # lambda_cost = 1e-3
@@ -180,15 +178,15 @@
 #     lambda_cost * TotalCost
 # ), "Objective"
 
-# # ---------------------------------------------
+
 # # 6. Solve
-# # ---------------------------------------------
+
 # solver = pl.PULP_CBC_CMD(msg=False)
 # m.solve(solver)
 
-# # ---------------------------------------------
+
 # # 7. Report
-# # ---------------------------------------------
+
 # print(f"Status: {pl.LpStatus[m.status]}")
 # print(f"Objective value: {pl.value(m.objective):.2f}")
 # print(f"Total cost: {TotalCost.value():.2f} (budget {budget:.2f})\n")
