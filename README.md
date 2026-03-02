@@ -6,7 +6,7 @@ The package is designed for **multi-target linear optimization problems**, where
 
 PyGuLP is **domain-agnostic** and can be applied wherever linear models with multiple targets are appropriate.
 
-📘 Full documentation:  
+Full documentation:  
 https://www.kcdh.iitb.ac.in/~kshitij/browser/assets/glp-docs/index.html
 
 ---
@@ -114,7 +114,7 @@ Deviation variables are created automatically when goals are added.
 
 ---
 
-## Current features (Version 0.0.1)
+## Current features (Version 0.1.1)
 
 - Weighted Goal Programming (WGP)
 - Automatic creation of deviation variables (d-, d+)
@@ -201,7 +201,7 @@ Each deviation entry is:
 
 More detailed worked examples are available here:
 
-👉 https://github.com/aidelab-iitbombay/GLP/tree/Worked_examples_using_GLP
+https://github.com/aidelab-iitbombay/GLP/tree/Worked_examples_using_GLP
 
 ---
 
