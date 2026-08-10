@@ -1,12 +1,5 @@
-import os
-import sys
-
-sys.path.append(os.path.abspath("src"))
-
-# ======================
-# STEP 1: FAKE SIMPLIFIED DATA
-# ======================
 import pandas as pd
+
 from glp.core import GLPModel, Goal, GoalSense
 
 data = {
