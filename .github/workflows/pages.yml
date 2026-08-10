@@ -21,11 +21,11 @@ jobs:
       - name: Install dependencies
         run: pip install sphinx sphinx-rtd-theme
       - name: Build Sphinx
-        run: sphinx-build docs/ build/
+        run: sphinx-build -b html docs/source docs/build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'build/'
+          path: 'docs/build/'
 
   deploy:
     needs: build
