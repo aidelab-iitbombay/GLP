@@ -226,4 +226,4 @@ https://github.com/aidelab-iitbombay/GLP/tree/Worked_examples_using_GLP
 
 ## License
 
-MIT License
+[MIT License](LICENSE)
