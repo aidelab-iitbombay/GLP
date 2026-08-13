@@ -77,7 +77,7 @@ Only one of `d-` or `d+` is positive in an optimal solution.
 
 ## Weighted Goal Programming Objective
 
-In Version 0.0.1, PyGuLP implements:
+PyGuLP implements:
 
     minimize  Σ w * (d- + d+)
 
