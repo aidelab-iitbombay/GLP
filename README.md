@@ -7,7 +7,7 @@ The package is designed for **multi-target linear optimization problems**, where
 PyGuLP is **domain-agnostic** and can be applied wherever linear models with multiple targets are appropriate.
 
 Full documentation:  
-https://www.kcdh.iitb.ac.in/~kshitij/browser/assets/glp-docs/index.html
+https://aidelab-iitbombay.github.io/PyGuLP/
 
 ---
 
