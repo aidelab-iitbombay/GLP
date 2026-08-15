@@ -1,37 +1,37 @@
 PyGuLP Package
-===========
+==============
 
 Submodules
 ----------
 
-glp.constraint module
----------------------
+pygulp.constraint module
+------------------------
 
-.. automodule:: glp.constraint
+.. automodule:: pygulp.constraint
    :members:
    :show-inheritance:
    :undoc-members:
 
-glp.core module
----------------
+pygulp.core module
+------------------
 
-.. automodule:: glp.core
+.. automodule:: pygulp.core
    :members:
    :show-inheritance:
    :undoc-members:
 
-glp.enums module
-----------------
+pygulp.enums module
+-------------------
 
-.. automodule:: glp.enums
+.. automodule:: pygulp.enums
    :members:
    :show-inheritance:
    :undoc-members:
 
-glp.goal module
----------------
+pygulp.goal module
+------------------
 
-.. automodule:: glp.goal
+.. automodule:: pygulp.goal
    :members:
    :show-inheritance:
    :undoc-members:
@@ -39,7 +39,7 @@ glp.goal module
 Module contents
 ---------------
 
-.. automodule:: glp
+.. automodule:: pygulp
    :members:
    :show-inheritance:
    :undoc-members:

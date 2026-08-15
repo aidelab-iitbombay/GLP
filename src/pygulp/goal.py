@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from glp.enums import GoalSense
+from pygulp.enums import GoalSense
 
 
 @dataclass

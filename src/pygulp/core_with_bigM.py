@@ -1,17 +1,11 @@
+# src/pygulp/core.py
 """
 Core structures for Goal Linear Programming (GLP).
 
-This module provides the fundamental building blocks to formulate and solve
-Goal Linear Programming problems using PuLP, including:
-
-- Decision variable management
-- Variable grouping and group-level bounds
-- Goal definitions with deviation variables
-- Hard constraints
-- Weighted Goal Programming solver
-
-This file is intentionally minimal and generic, forming the foundation
-for higher-level problem-specific models (e.g., diet optimization).
+Contains:
+- GoalSense, ConstraintSense enums
+- Goal, Constraint dataclasses
+- GLPModel (wrapper over PuLP)
 """
 
 from __future__ import annotations
@@ -22,9 +16,9 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 import pulp
 from pulp import LpVariable
 
-from glp.constraint import Constraint
-from glp.enums import ConstraintSense
-from glp.goal import Goal
+from pygulp.constraint import Constraint
+from pygulp.enums import ConstraintSense
+from pygulp.goal import Goal
 
 # ============================================================================
 # UTILS
@@ -32,32 +26,39 @@ from glp.goal import Goal
 
 
 def _sanitize_name(name: str) -> str:
-    """
-    Sanitize a user-provided name to make it safe for PuLP.
-
-    Replaces non-alphanumeric characters with underscores and ensures
-    the resulting name is valid for use as a PuLP variable or constraint.
-
-    Parameters
-    ----------
-    name : str
-        Original name provided by the user.
-
-    Returns
-    -------
-    str
-        Sanitized name compatible with PuLP.
-
-    Raises
-    ------
-    ValueError
-        If the name cannot be sanitized into a valid identifier.
-    """
     s = re.sub(r"\W+", "_", name.strip())
     s = re.sub(r"_+", "_", s)
     if not s:
         raise ValueError("Invalid name after sanitization")
     return s
+
+
+# ============================================================================
+# 🆕 ELASTIC CONSTRAINT (BIG-M FEASIBILITY)
+# ============================================================================
+
+
+class ElasticConstraint:
+    """
+    Represents an elastic (soft) constraint using Big-M feasibility relaxation.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        expression: Any,
+        sense: ConstraintSense,
+        rhs: float,
+        penalty: float = 1e5,
+    ):
+        if penalty <= 0:
+            raise ValueError("penalty must be positive")
+
+        self.name = name
+        self.expression = expression
+        self.sense = sense
+        self.rhs = rhs
+        self.penalty = penalty
 
 
 # ============================================================================
@@ -67,32 +68,19 @@ def _sanitize_name(name: str) -> str:
 
 class GLPModel:
     """
-    Core Goal Linear Programming (GLP) model.
+    Central GLP model wrapper around PuLP.
 
-    This class wraps a PuLP ``LpProblem`` and provides a structured API to:
-
-    - Add decision variables (individually or in groups)
-    - Organize variables into named groups
-    - Apply collective lower/upper bounds to groups of variables
-    - Define goals with deviation variables (under- and over-achievement)
-    - Add hard constraints
-    - Solve the model using Weighted Goal Programming
-
-    The design is intentionally generic and problem-agnostic, allowing
-    this core model to be reused across diverse optimization problems.
+    Handles:
+    - variable registry
+    - variable groups
+    - goal registry
+    - deviation variables
+    - constraint registry
+    - elastic (Big-M) feasibility constraints
+    - weighted goal programming solve
     """
 
-    def __init__(self, name: str = "glp", minimize: bool = True):
-        """
-        Initialize a GLP model.
-
-        Parameters
-        ----------
-        name : str, optional
-            Name of the optimization problem.
-        minimize : bool, optional
-            Whether the objective should be minimized (default True).
-        """
+    def __init__(self, name: str = "pygulp", minimize: bool = True):
         self.name = name
         self.problem = pulp.LpProblem(
             name, pulp.LpMinimize if minimize else pulp.LpMaximize
@@ -103,6 +91,10 @@ class GLPModel:
         self.constraints: Dict[str, Constraint] = {}
         self.dev_vars: Dict[str, Tuple[pulp.LpVariable, pulp.LpVariable]] = {}
         self.variable_groups: Dict[str, List[str]] = {}
+
+        # 🆕 Big-M / Elastic constraint storage
+        self.elastic_constraints: Dict[str, ElasticConstraint] = {}
+        self.violation_vars: Dict[str, pulp.LpVariable] = {}
 
     # ----------------------------------------------------------------------
     # VARIABLE API
@@ -115,26 +107,7 @@ class GLPModel:
         cat: str = "Continuous",
     ) -> pulp.LpVariable:
         """
-        Add a single decision variable to the model.
-
-        If a variable with the same name already exists, the existing variable
-        is returned.
-
-        Parameters
-        ----------
-        name : str
-            Name of the decision variable.
-        low_bound : float, optional
-            Lower bound for the variable (default is 0).
-        up_bound : float, optional
-            Upper bound for the variable (default is None).
-        cat : str, optional
-            Variable category: "Continuous", "Integer", or "Binary".
-
-        Returns
-        -------
-        pulp.LpVariable
-            The created (or existing) PuLP variable.
+        Add a single decision variable.
         """
 
         if name in self.variables:
@@ -165,29 +138,8 @@ class GLPModel:
         group: Optional[str] = None,
     ) -> Dict[str, pulp.LpVariable]:
         """
-        Add multiple decision variables at once.
-
-        All variables share the same bounds and category. Optionally, the
-        variables can be assigned to a named group for later group-level
-        operations (e.g., collective bounds).
-
-        Parameters
-        ----------
-        names : iterable of str
-            Names of the variables to be added.
-        low_bound : float, optional
-            Lower bound for all variables.
-        up_bound : float, optional
-            Upper bound for all variables.
-        cat : str, optional
-            Variable category ("Continuous", "Integer", "Binary").
-        group : str, optional
-            Name of a variable group to assign these variables to.
-
-        Returns
-        -------
-        dict
-            Mapping from variable name to PuLP variable.
+        Add multiple variables at once.
+        Optionally assign them to a group.
         """
 
         created = {}
@@ -209,22 +161,7 @@ class GLPModel:
     # ----------------------------------------------------------------------
     def add_to_group(self, group: str, variables: Iterable[str]) -> None:
         """
-        Add existing variables to a named variable group.
-
-        Variable groups allow collective operations such as applying
-        group-level lower and upper bounds.
-
-        Parameters
-        ----------
-        group : str
-            Name of the group.
-        variables : iterable of str
-            Names of variables to add to the group.
-
-        Raises
-        ------
-        KeyError
-            If any variable does not exist in the model.
+        Add existing variables to a named group.
         """
 
         if group not in self.variable_groups:
@@ -246,25 +183,7 @@ class GLPModel:
         upper: Optional[float] = None,
     ) -> None:
         """
-        Apply collective lower and/or upper bounds to a group of variables.
-
-        Internally, this creates constraints of the form:
-            sum(group_variables) >= lower
-            sum(group_variables) <= upper
-
-        Parameters
-        ----------
-        group : str
-            Name of the variable group.
-        lower : float, optional
-            Collective lower bound for the group.
-        upper : float, optional
-            Collective upper bound for the group.
-
-        Raises
-        ------
-        KeyError
-            If the specified group does not exist.
+        Add collective lower/upper bounds for a group of variables.
         """
 
         if group not in self.variable_groups:
@@ -283,23 +202,6 @@ class GLPModel:
     # CONSTRAINT API
     # ----------------------------------------------------------------------
     def add_constraint(self, c: Constraint) -> None:
-        """
-        Add a hard constraint to the model.
-
-        Hard constraints must always be satisfied; infeasible models will
-        fail unless relaxed externally.
-
-        Parameters
-        ----------
-        c : Constraint
-            Constraint object defining the expression, sense, and RHS.
-
-        Raises
-        ------
-        ValueError
-            If a constraint with the same name already exists.
-        """
-
         if c.name in self.constraints:
             raise ValueError(f"constraint '{c.name}' exists")
 
@@ -318,41 +220,41 @@ class GLPModel:
         self.constraints[c.name] = c
 
     # ----------------------------------------------------------------------
+    # 🆕 ELASTIC CONSTRAINT API (BIG-M)
+    # ----------------------------------------------------------------------
+    def add_elastic_constraint(self, c: ElasticConstraint) -> LpVariable:
+        """
+        Add a Big-M elastic (feasibility) constraint.
+        """
+
+        if c.name in self.elastic_constraints:
+            raise ValueError(f"elastic constraint '{c.name}' exists")
+
+        safe = _sanitize_name(c.name)
+
+        v = pulp.LpVariable(f"v_{safe}", lowBound=0)
+        self.variables[f"v_{safe}"] = v
+
+        if c.sense == ConstraintSense.LE:
+            constr = c.expression <= c.rhs + v
+        elif c.sense == ConstraintSense.GE:
+            constr = c.expression >= c.rhs - v
+        elif c.sense == ConstraintSense.EQ:
+            constr = c.expression + v == c.rhs
+        else:
+            raise ValueError("invalid constraint sense")
+
+        self.problem.addConstraint(constr, name=f"elastic_{safe}")
+
+        self.elastic_constraints[c.name] = c
+        self.violation_vars[c.name] = v
+
+        return v
+
+    # ----------------------------------------------------------------------
     # GOAL API
     # ----------------------------------------------------------------------
     def add_goal(self, g: Goal) -> Tuple[LpVariable, LpVariable]:
-        """
-        Add a goal to the model and create its deviation variables.
-
-        For a goal of the form:
-            expression ≈ target
-
-        The following linking constraint is added:
-            expression + n - p = target
-
-        where:
-            n = under-achievement deviation (>= 0)
-            p = over-achievement deviation (>= 0)
-
-        These deviation variables are later penalized in the objective
-        during Weighted Goal Programming.
-
-        Parameters
-        ----------
-        g : Goal
-            Goal definition including expression, target, and weight.
-
-        Returns
-        -------
-        tuple
-            (negative_deviation_variable, positive_deviation_variable)
-
-        Raises
-        ------
-        ValueError
-            If a goal with the same name already exists.
-        """
-
         if g.name in self.goals:
             raise ValueError(f"goal '{g.name}' exists")
 
@@ -373,7 +275,7 @@ class GLPModel:
         return n_var, p_var
 
     # ----------------------------------------------------------------------
-    # SOLVE: WEIGHTED GOAL PROGRAMMING
+    # SOLVE: WEIGHTED GOAL PROGRAMMING + BIG-M
     # ----------------------------------------------------------------------
     def solve_weighted(
         self,
@@ -381,38 +283,14 @@ class GLPModel:
         cost_expr: Optional[pulp.LpAffineExpression] = None,
         cost_weight: float = 0.0,
     ) -> Dict[str, Any]:
-        """
-        Solve the model using Weighted Goal Programming (WGP).
-
-        The objective minimized is:
-            cost_weight * cost_expr
-            + sum(w_minus * n_i + w_plus * p_i) over all goals
-
-        Parameters
-        ----------
-        goal_weights : dict, optional
-            Mapping: goal_name -> (weight_under, weight_over).
-            If not provided, each goal's default weight is used.
-        cost_expr : pulp.LpAffineExpression, optional
-            Linear expression representing cost or another primary objective.
-        cost_weight : float, optional
-            Weight applied to the cost expression.
-
-        Returns
-        -------
-        dict
-            Dictionary containing:
-            - status: solver status string
-            - variables: values of all decision and deviation variables
-            - deviations: (n, p) values for each goal
-            - objective: final objective value
-        """
 
         terms = []
 
+        # (1) cost term
         if cost_expr is not None and cost_weight != 0:
             terms.append(cost_weight * cost_expr)
 
+        # (2) goal deviations
         for gname, g in self.goals.items():
             n, p = self.dev_vars[gname]
 
@@ -424,6 +302,10 @@ class GLPModel:
 
             terms.append(w_minus * n)
             terms.append(w_plus * p)
+
+        # (3) 🆕 elastic constraint penalties (Big-M)
+        for cname, c in self.elastic_constraints.items():
+            terms.append(c.penalty * self.violation_vars[cname])
 
         if not terms:
             raise RuntimeError("No objective terms provided")
@@ -463,9 +345,6 @@ class GLPModel:
 
     # ----------------------------------------------------------------------
     def __repr__(self) -> str:
-        """
-        Return a concise string representation of the GLPModel.
-        """
         return (
             f"GLPModel(vars={len(self.variables)}, "
             f"goals={len(self.goals)}, "

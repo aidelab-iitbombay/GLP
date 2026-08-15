@@ -1,10 +1,10 @@
 import pandas as pd
 import pulp
 
-from glp.constraint import Constraint
-from glp.core import GLPModel
-from glp.enums import ConstraintSense
-from glp.goal import Goal
+from pygulp.constraint import Constraint
+from pygulp.core import GLPModel
+from pygulp.enums import ConstraintSense
+from pygulp.goal import Goal
 
 # 1. Data
 units = pd.DataFrame(
@@ -124,7 +124,7 @@ templates = [k for k in K if opt_type[k] == "Infusion_Template"]
 patients_per_nurse_hour = 2.0
 
 
-# 3. Model (using glp)
+# 3. Model (using pygulp)
 
 m = GLPModel(name="Outpatient_GLPP", minimize=True)
 

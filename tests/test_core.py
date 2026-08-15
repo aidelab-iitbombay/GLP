@@ -7,10 +7,10 @@ import pytest
 # Ensure src is on path when running tests from project root
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-from glp.constraint import Constraint
-from glp.core import GLPModel
-from glp.enums import ConstraintSense, GoalSense
-from glp.goal import Goal
+from pygulp.constraint import Constraint
+from pygulp.core import GLPModel
+from pygulp.enums import ConstraintSense, GoalSense
+from pygulp.goal import Goal
 
 # ----------------------------
 # Basic Core Component Tests

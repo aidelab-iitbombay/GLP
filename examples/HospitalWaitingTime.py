@@ -1,9 +1,9 @@
 import pandas as pd
 
-from glp.constraint import Constraint
-from glp.core import GLPModel
-from glp.enums import ConstraintSense, GoalSense
-from glp.goal import Goal
+from pygulp.constraint import Constraint
+from pygulp.core import GLPModel
+from pygulp.enums import ConstraintSense, GoalSense
+from pygulp.goal import Goal
 
 # --- 1. Data Setup (from your notebook) ---
 groups = pd.DataFrame(

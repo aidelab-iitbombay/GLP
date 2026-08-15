@@ -39,8 +39,8 @@ jobs:
 
     - name: Type check with mypy
       run: |
-        mypy --ignore-missing-imports src/glp
+        mypy --ignore-missing-imports src/pygulp
 
     - name: Test with pytest
       run: |
-        pytest --cov=glp
+        pytest --cov=pygulp

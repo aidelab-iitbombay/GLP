@@ -28,7 +28,7 @@ Optional:
 
 ## Project structure
 
-    src/glp/
+    src/pygulp/
     ├── core.py        # GLPModel and solver logic
     ├── goal.py        # Goal dataclass
     ├── constraint.py  # Constraint dataclass
@@ -136,10 +136,10 @@ Default solver: **CBC** (bundled with PuLP)
 
 ## Minimal Multi-Goal Example
 
-    from glp.core import GLPModel
-    from glp.goal import Goal
-    from glp.constraint import Constraint
-    from glp.enums import ConstraintSense, GoalSense
+    from pygulp.core import GLPModel
+    from pygulp.goal import Goal
+    from pygulp.constraint import Constraint
+    from pygulp.enums import ConstraintSense, GoalSense
 
     model = GLPModel("multi_goal_example")
 
